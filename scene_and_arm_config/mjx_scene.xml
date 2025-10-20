@@ -1,13 +1,13 @@
 <mujoco model="panda scene">
   <include file="mjx_panda.xml"/>
+  <!-- <include file="different_panda.xml"/> -->
 
   <statistic center="0.3 0 0.4" extent="1"/>
 
   <!-- <option timestep="0.005" iterations="5" ls_iterations="8" integrator="implicitfast">
     <flag eulerdamp="disable"/>
   </option> -->
-  <option timestep="0.005" integrator="implicitfast"
-         iterations="50" ls_iterations="100" impratio="5"/>
+  <option  impratio="10" noslip_iterations="3"/>
 
   <custom>
     <numeric data="12" name="max_contact_points"/>
@@ -25,43 +25,84 @@
     <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3"
       markrgb="0.8 0.8 0.8" width="300" height="300"/>
     <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.2"/>
+    <material name="bin_wall"  rgba="0.16 0.18 0.22 1" reflectance="0.1"/>
+    <material name="bin_floor" rgba="0.10 0.12 0.14 1" reflectance="0.05"/>
   </asset>
 
   <worldbody>
     <light pos="0 0 1.5" dir="0 0 -1" directional="true"/>
     <geom name="floor" size="0 0 0.05" type="plane" material="groundplane" contype="1"/>
     
-    <body name="obj_red_sphere" pos="0.5 0.25 0.6">
+    <body name="obj_red_sphere" pos="0.3 0.3 0.05">
       <freejoint/>
-      <geom type="sphere" size="0.02" rgba="1 0.2 0.2 1" friction="0.8 0.1 0.01" density="1200"/>
+      <geom type="sphere" size="0.02" rgba="1 0.2 0.2 1"  contype="1" conaffinity="1" group="0" condim="4" friction="2" density="1200"/>
     </body>
 
-    <body name="obj_red_cube" pos="0.64 0.15 0.5">
+    <body name="obj_red_cube" pos="0.64 0.4  0.05">
       <freejoint/>
-      <geom type="box" size="0.02 0.02 0.02" rgba="1 0.2 0.2 1" friction="0.9 0.1 0.02" density="1500"/>
+      <geom type="box" size="0.02 0.02 0.02" rgba="1 0.2 0.2 1" contype="1" conaffinity="1" group="0" condim="4" friction="2" density="1200"/>
     </body>
 
-    <body name="obj_green_sphere" pos="0.5 0 0.6">
+    <body name="obj_green_sphere" pos="0.5 0.3 0.05">
       <freejoint/>
-      <geom type="sphere" size="0.02" rgba="0.2 0.9 0.2 1" friction="0.8 0.1 0.01" density="1200"/>
+      <geom type="sphere" size="0.02" rgba="0.2 0.9 0.2 1"  contype="1" conaffinity="1" group="0" condim="4" friction="2" density="1200"/>
     </body>
 
-    <body name="obj_green_cube" pos="0.64 -0.1 0.5">
+    <body name="obj_green_cube" pos="0.64 0.2  0.05">
       <freejoint/>
-      <geom type="box" size="0.02 0.02 0.02" rgba="0.2 0.9 0.2 1" friction="0.9 0.1 0.02" density="1500"/>
-    </body>
-
-
-    <body name="obj_blue_sphere" pos="0.5 -0.25 0.6">
-      <freejoint/>
-      <geom type="sphere" size="0.02" rgba="0.2 0.4 1 1" friction="0.8 0.1 0.01" density="1200"/>
+      <geom type="box" size="0.02 0.02 0.02" rgba="0.2 0.9 0.2 1" contype="1" conaffinity="1" group="0" condim="4" friction="2" density="1200"/>
     </body>
 
 
-    <body name="obj_blue_cube" pos="0.64 -0.35 0.5">
+    <body name="obj_blue_sphere" pos="0.5 0.1 0.05">
       <freejoint/>
-      <geom type="box" size="0.02 0.02 0.02" rgba="0.2 0.4 1 1" friction="0.9 0.1 0.02" density="1500"/>
+      <geom type="sphere" size="0.02" rgba="0.2 0.4 1 1"  contype="1" conaffinity="1" group="0" condim="4" friction="2" density="1200"/>
     </body>
+
+
+    <body name="obj_blue_cube" pos="0.64 0  0.05">
+      <freejoint/>
+      <geom type="box" size="0.02 0.02 0.02" rgba="0.2 0.4 1 1" contype="1" conaffinity="1" group="0" condim="4" friction="2" density="1200"/>
+    </body>
+
+    <!-- Open-top bin: centered near your place target (0.55, -0.35).
+     Inner size: 0.18 x 0.18 m, wall thickness: 0.01 m, wall height: 0.10 m. -->
+    <body name="bin" pos="0.55 -0.35 0">
+      <!-- Base slab (outer 0.20 x 0.20, thickness 0.01). 
+          Box sizes are half-extents: [0.10, 0.10, 0.005]. -->
+      <geom name="bin_base" type="box" material="bin_floor"
+            size="0.10 0.10 0.005" pos="0 0 0.005"
+            friction="1.0 0.1 0.01" contype="1" conaffinity="1"/>
+
+      <!-- Walls: thickness 0.01 (half = 0.005), height 0.10 (half = 0.05).
+          Outer half-length in X/Y = inner_half(0.09) + thickness_half(0.005) = 0.095.
+          Centers sit at z = base_thickness(0.01) + wall_half(0.05) = 0.06. -->
+
+      <!-- West wall (x = -0.095), long along Y -->
+      <geom name="bin_wall_w" type="box" material="bin_wall"
+            size="0.005 0.095 0.05" pos="-0.095 0 0.06"
+            friction="1.0 0.1 0.01" contype="1" conaffinity="1"/>
+
+      <!-- East wall (x = +0.095) -->
+      <geom name="bin_wall_e" type="box" material="bin_wall"
+            size="0.005 0.095 0.05" pos="0.095 0 0.06"
+            friction="1.0 0.1 0.01" contype="1" conaffinity="1"/>
+
+      <!-- South wall (y = -0.095), long along X -->
+      <geom name="bin_wall_s" type="box" material="bin_wall"
+            size="0.095 0.005 0.05" pos="0 -0.095 0.06"
+            friction="1.0 0.1 0.01" contype="1" conaffinity="1"/>
+
+      <!-- North wall (y = +0.095) -->
+      <geom name="bin_wall_n" type="box" material="bin_wall"
+            size="0.095 0.005 0.05" pos="0 0.095 0.06"
+            friction="1.0 0.1 0.01" contype="1" conaffinity="1"/>
+
+      <!-- Optional: a tiny site at the bin center for targeting / debugging -->
+      <site name="bin_center" pos="0 0 0.12" size="0.006"
+            rgba="0.95 0.85 0.2 1"/>
+    </body>
+
 
   </worldbody>
 </mujoco>

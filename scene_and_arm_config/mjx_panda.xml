@@ -1,6 +1,8 @@
 <mujoco model="panda">
   <compiler angle="radian" meshdir="assets" autolimits="true"/>
 
+    <option integrator="implicitfast"/>
+
   <default>
     <default class="panda">
       <material specular="0.5" shininess="0.25"/>
